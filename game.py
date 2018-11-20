@@ -3,6 +3,9 @@ from human_player import HumanPlayer
 from dumb_player import DumbPlayer
 from grid_player import GridPlayer
 from pdf_player import PDFPlayer
+from time import time
+import cProfile, pstats, io
+# from pstats import SortKey
 
 
 class Game:
@@ -23,24 +26,25 @@ class Game:
         # Continue shooting till all ships are destroyed
         p1_hits = 0
         p2_hits = 0
-        while not self.game_over():
+        while True:
             if self.p1.shoot() == Board.SHOT_HIT:
                 p1_hits += 1
                 print(self.p1.message('Hit! {} ship locations hit so far.\n'.format(p1_hits)))
+                if self.p1.game_over():
+                    print('\n\nGame Over. All of your ships were destroyed...!')
+                    winner = 0
+                    break
             else:
                 print(self.p1.message('Miss...\n'))
             if self.p2.shoot() == Board.SHOT_HIT:
                 p2_hits += 1
                 print(self.p2.message('Hit! {} ship locations hit so far.\n').format(p2_hits))
+                if self.p2.game_over():
+                    print('\n\nGood job! You won!!')
+                    winner = 1
+                    break
             else:
                 print(self.p2.message('Miss...\n'))
-
-        if self.p1.game_over():
-            print('\n\nGame Over. All of your ships were destroyed...!')
-            winner = 0
-        else:
-            print('\n\nGood job! You won!!')
-            winner = 1
 
         # Show board at the end of the game
         print(self.p1.message('Board'))
@@ -74,6 +78,9 @@ if __name__ == '__main__':
 
     # Initialize Game and run
     # Score counts how many times player1 wins
+    pr = cProfile.Profile()
+    pr.enable()
+    start_time = time()
     score = 0
     for _ in range(rounds):
         p1.reset()
@@ -83,6 +90,14 @@ if __name__ == '__main__':
         game = Game(p1, p2)
         game.print_instruction()
         score += game.run()
+    end_time = time()
+    print("Run time: {}".format(end_time - start_time))
+    pr.disable()
+    s = io.StringIO()
+    # sortby = SortKey.CUMULATIVE
+    ps = pstats.Stats(pr, stream=s).sort_stats('cumulative')
+    ps.print_stats()
+    print(s.getvalue())
 
     score /= rounds
     score *= 100
