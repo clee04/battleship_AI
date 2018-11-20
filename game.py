@@ -37,8 +37,10 @@ class Game:
 
         if self.p1.game_over():
             print('\n\nGame Over. All of your ships were destroyed...!')
+            winner = 0
         else:
             print('\n\nGood job! You won!!')
+            winner = 1
 
         # Show board at the end of the game
         print(self.p1.message('Board'))
@@ -46,30 +48,43 @@ class Game:
         print(self.p2.message('Board'))
         self.p2.board.print_board()
 
+        return winner
+
     def print_instruction(self):
         print("\nThe goal of this game is to destroy all enemy's ships.")
         print("First pick 5 locations on a 10x10 grid to place your ships.")
         print("Then try to shoot all enemy ships before they destroy yours!")
-        print("Remember, the enemy ships can be anywhere on the grid! Good luck!\n")
+        print("Remember, the enemy ships can be anywhere on the grid!")
+        print("The grid size is 10x10! Good luck!\n")
 
 
 if __name__ == '__main__':
     print('\nWelcome to the Battleship!')
-    level = int(input('Please select a level (1,2,3): '))
+    level = 3#int(input('Please select a level (1,2,3): '))
+    rounds = 100
 
     # Initialize players
-    p1 = HumanPlayer('p1')
+    p1 = GridPlayer('p1')
     if level == 1:
         p2 = DumbPlayer('p2')
     elif level == 2:
         p2 = GridPlayer('p2')
     else:
         p2 = PDFPlayer('p2')
-    p1.enemy = p2.board
-    p2.enemy = p1.board
 
     # Initialize Game and run
-    game = Game(p1, p2)
-    game.print_instruction()
-    game.run()
+    # Score counts how many times player1 wins
+    score = 0
+    for _ in range(rounds):
+        p1.reset()
+        p2.reset()
+        p1.enemy = p2.board
+        p2.enemy = p1.board
+        game = Game(p1, p2)
+        game.print_instruction()
+        score += game.run()
+
+    score /= rounds
+    score *= 100
+    print('Player1 won {}% of the rounds'.format(score))
     

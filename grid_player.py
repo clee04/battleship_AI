@@ -40,3 +40,7 @@ class GridPlayer(DumbPlayer):
                 return shot
             except InvalidMoveException:
                 pass
+
+    def reset(self):
+        self.board = Board()
+        self.estimated_board = np.zeros((10,10))

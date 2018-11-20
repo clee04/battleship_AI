@@ -17,23 +17,21 @@ class PDFPlayer(DumbPlayer):
 
     def update_pdf(self, ship):
         size = SHIPS[ship]
-        h_mat = np.zeros((10, 10), dtype=int)
-        v_mat = np.zeros((10, 10), dtype=int)
+        self.pdf[ship] = np.zeros((10,10))
         board = self.estimated_board
+
+        temp = np.zeros((10, 11-size))
+        np.argwhere(temp)
+
+
         for x in range(10):
             for y in range(11 - size):
-                can_be_placed = all(cell in [Board.EMPTY, Board.SHOT_HIT] for cell in board[x,y:y+size])
-                if can_be_placed:
-                    for z in range(size):
-                        h_mat[x,y+z] += 1
-        for y in range(10):
-            for x in range(11 - size):
-                can_be_placed = all(cell in [Board.EMPTY, Board.SHOT_HIT] for cell in board[x:x+size,y])
-                if can_be_placed:
-                    for z in range(size):
-                        v_mat[x+z,y] += 1
-
-        self.pdf[ship] = h_mat + v_mat
+                can_be_placed_h = np.logical_or(board[x,y:y+size] == Board.EMPTY, board[x,y:y+size] == Board.SHOT_HIT)
+                can_be_placed_v = all(cell in [Board.EMPTY, Board.SHOT_HIT] for cell in board[y:y+size,x])
+                if can_be_placed_h:
+                    self.pdf[ship][x,y:y+z] += 1
+                if can_be_placed_v:
+                    self.pdf[ship][y:y+z,x] += 1
 
     def pick_target(self):
         probs = np.zeros((10,10), dtype=int)
@@ -58,6 +56,12 @@ class PDFPlayer(DumbPlayer):
                 shot = self.enemy.shoot(x, y)
                 print(self.message('Shoot location: ({},{})'.format(x, y)))
                 self.estimated_board[x,y] = shot
+                print(self.estimated_board)
                 return shot
             except InvalidMoveException:
                 raise InvalidMoveException
+
+    def reset(self):
+        self.board = Board()
+        self.estimated_board = np.zeros((10, 10))
+        self.pdf = {ship: np.zeros((10, 10)) for ship in SHIPS}

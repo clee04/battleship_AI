@@ -34,3 +34,4 @@ class DumbPlayer(Player):
                 return shot
             except InvalidMoveException:
                 pass
+

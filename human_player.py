@@ -73,3 +73,7 @@ class HumanPlayer(Player):
         print(self.message('1 indicates miss; 6 indicates hit'))
         print(np.array(self.shot_record))
         return shot
+
+    def reset(self):
+        self.board = Board()
+        self.shot_record = np.zeros((10,10))

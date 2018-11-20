@@ -14,6 +14,9 @@ class Player(object):
 
     def shoot(self):
         raise NotImplementedError
+
+    def reset(self):
+        self.board = Board()
         
     def game_over(self):
         return self.board.game_over()
