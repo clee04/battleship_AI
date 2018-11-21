@@ -36,7 +36,7 @@ class GridPlayer(DumbPlayer):
             try:
                 shot = self.enemy.shoot(x, y)
                 self.estimated_board[x,y] = shot
-                print(self.message('Shoot location: ({},{})'.format(x,y)))
+                # print(self.message('Shoot location: ({},{})'.format(x,y)))
                 return shot
             except InvalidMoveException:
                 pass

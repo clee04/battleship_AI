@@ -63,7 +63,7 @@ class PDFPlayer(DumbPlayer):
             x, y = self.pick_target()
             try:
                 shot = self.enemy.shoot(x, y)
-                print(self.message('Shoot location: ({},{})'.format(x, y)))
+                # print(self.message('Shoot location: ({},{})'.format(x, y)))
                 if shot == Board.SHOT_MISS:
                     self.update_pdf(x,y)
                 self.estimated_board[x,y] = shot

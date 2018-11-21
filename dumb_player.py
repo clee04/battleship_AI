@@ -24,13 +24,15 @@ class DumbPlayer(Player):
                 except InvalidMoveException:
                     pass
 
+        return self.board.board
+
     # Randomly pick locations to shoot
     def shoot(self):
         while True:
             x, y = np.random.choice(10), np.random.choice(10)
             try:
                 shot = self.enemy.shoot(x, y)
-                print(self.message('Shoot location: ({},{})'.format(x,y)))
+                # print(self.message('Shoot location: ({},{})'.format(x,y)))
                 return shot
             except InvalidMoveException:
                 pass

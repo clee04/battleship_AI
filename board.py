@@ -61,6 +61,7 @@ class Board:
         return self.board[x,y]
 
     def print_board(self):
+        print(self.board.shape)
         print(self.board)
         print()
 

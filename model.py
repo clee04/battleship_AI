@@ -3,12 +3,14 @@ Catherine (Chaihyun) Lee & Lucy Newman (2018)
 Contributions from Rick Stevens
 """
 
+from generate_data import *
 import tensorflow as tf
 import cv2
 import numpy as np
 import matplotlib.pyplot as plt
 import os 
 import time
+import pickle
 
 # Ignore tensorflow warning
 os.environ['TF_CPP_MIN_LOG_LEVEL']='2'
@@ -27,23 +29,15 @@ class Model:
         self.optimize()
  
     def run_model(self):
-
-        # x = tf.reshape(self.input_data, shape=[par['batch_train_size'],*par['inp_img_shape'],1])
-        conv1 = tf.layers.conv2d(inputs=self.input_data, filters=64, kernel_size=(3,3), padding='same', activation=tf.nn.relu)
-        self.output = tf.layers.dense(tf.layers.flatten(conv1), 1, activation=tf.nn.relu)
+        conv1 = tf.layers.conv2d(inputs=self.input_data, filters=64, kernel_size=(5,5), padding='same', activation=tf.nn.relu)
+        self.output = tf.layers.dense(tf.layers.flatten(conv1), 1) + 65
 
  
     def optimize(self):
         # Calculae loss
-        print(self.target_data.shape)
-        print(self.output.shape)
         self.loss = tf.losses.mean_squared_error(self.target_data, self.output)
-        self.train_op = tf.train.AdamOptimizer(0.0001).minimize(self.loss)
+        self.train_op = tf.train.AdamOptimizer(0.001).minimize(self.loss)
 
-def generate_train_batch(batch_size):
-    input_data = np.random.randint(2,size=(batch_size,10,10,1))
-    target_data = np.random.randint(2,size=(batch_size,1))
-    return input_data, target_data
 
 def main(gpu_id = None):
 
@@ -54,6 +48,7 @@ def main(gpu_id = None):
     tf.reset_default_graph()
 
     # Generate stimulus
+    player = 3
     batch_size = 100
 
     # Placeholders for the tensorflow model
@@ -76,19 +71,18 @@ def main(gpu_id = None):
 
         # Train the model
         start = time.time()
-        for i in range(1000):
-
+        i = 0
+        while True:
             # Generate training set
-            input_data, target_data = generate_train_batch(batch_size)
+            raw_data, target_data = generate_train_batch(batch_size, player)
+            input_data = raw_data.astype(np.bool).astype(np.float32)
             feed_dict = {x: input_data, y: target_data}
             _, train_loss, model_output = sess.run([model.train_op, model.loss, model.output], feed_dict=feed_dict)
             
             # Check current status
             if i % 10 == 0:
-
                 # Print current status
-                # print('Model {:2} | Task: {:s} | Iter: {:6} | Loss: {:8.3f} | Run Time: {:5.3f}s'.format( \
-                    # 1, 1, i, train_loss, time.time()-start))
+                print('Player: {} | Iter: {} | Loss: {:8.3f} | Ouput: {} | Actual Moves: {}'.format(player, i,train_loss,model_output.mean(),target_data.mean()))
                 losses.append(train_loss)
                
                 # Plot loss curve
@@ -97,6 +91,18 @@ def main(gpu_id = None):
                     plt.savefig('./run_training_curve.png')
                     plt.close()
 
+                print(raw_data[np.argmin(model_output)][:,:,0])
+
+            if i % 200 == 0:
+                raw_data, target_data = generate_test_batch(batch_size, player)
+                input_data = raw_data.astype(np.bool).astype(np.float32)
+                feed_dict = {x: input_data, y: target_data}
+                model_output = sess.run(model.output, feed_dict=feed_dict)
+
+                best_board = raw_data[np.argmax(model_output)]
+                np.save('./board_{}'.format(player),best_board)
+
+            i += 1
 
 
 if __name__ == "__main__":
